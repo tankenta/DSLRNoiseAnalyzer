@@ -7,16 +7,18 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-MEAN_IMG_FNAME = 'mean.JPG'
+MEAN_IMG_FNAME = 'mean.jpg'
 IMREAD_FLAG = cv2.IMREAD_GRAYSCALE | cv2.IMREAD_ANYDEPTH
 IMSHAPE = (3456, 5184)
 SHAPE = (300, 300)
 OFFSET = tuple((np.array(IMSHAPE) - np.array(SHAPE))/2)
 TRANS_PX = 2
-BINS = 100
+BINS = 200
 
-def get_imgs_paths(par_dir, ext='.JPG'):    # TODO: JPG, jpg
-    paths = glob.glob(os.path.join(par_dir, '*'+ext))
+def get_imgs_paths(par_dir, exts=['.jpg', '.JPG']):
+    paths = list()
+    for ext in exts:
+        paths.extend(glob.glob(os.path.join(par_dir, '*' + ext)))
     return paths
 
 def sample_small_img(src_img, offset, shape):
