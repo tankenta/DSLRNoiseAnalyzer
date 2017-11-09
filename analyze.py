@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import cv2
 import glob
-import sys
 import os
-import numpy as np
+import sys
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 
 MEAN_IMG_FNAME = 'mean.JPG'
 IMREAD_FLAG = cv2.IMREAD_GRAYSCALE | cv2.IMREAD_ANYDEPTH
@@ -13,6 +13,7 @@ IMSHAPE = (3456, 5184)
 SHAPE = (300, 300)
 OFFSET = tuple((np.array(IMSHAPE) - np.array(SHAPE))/2)
 TRANS_PX = 2
+BINS = 100
 
 def get_imgs_paths(par_dir, ext='.JPG'):    # TODO: JPG, jpg
     paths = glob.glob(os.path.join(par_dir, '*'+ext))
@@ -65,11 +66,6 @@ def main():
         cv2.imwrite(dst_path, dst_img)
         sample_dicts.append({'path': dst_path, 'img': np.copy(dst_img)})
 
-#     for i, sample_dict in enumerate(sample_dicts):
-#         plt.subplot(1, 2, i+1)
-#         dst_img = sample_dict['img']
-#         plt.imshow(cv2.cvtColor(dst_img, cv2.COLOR_GRAY2RGB))
-#     plt.show()
     imgs_arr = [s_dict['img'].astype(np.uint16) for s_dict in sample_dicts]
     mean_img = (np.array(imgs_arr).sum(axis=0) / len(imgs_arr)).astype(np.uint8)
     mean_img_path = os.path.join(dst_dir, MEAN_IMG_FNAME)
@@ -81,23 +77,12 @@ def main():
         diff_img = sample_dict['img'].astype(int) - mean_img.astype(int)
         noise_arr.extend(diff_img.flatten())
 
-    return noise_arr
-#     fig = plt.figure()
-#     ax = fig.add_subplot(1, 1, 1)
-#     ax.hist(noise_arr, bins=100)
-#     ax.set_xlabel('diff')
-#     ax.set_ylabel('freq')
-#     fig.show()
-
-if __name__ == '__main__':
-    noise_arr = main()
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    ax.hist(noise_arr, bins=100)
+    ax.hist(noise_arr, bins=BINS)
     ax.set_xlabel('diff')
     ax.set_ylabel('freq')
-    fig.show()
-    while True:
-        key = cv2.waitKey(30)
-        if key == ord('q'):
-            break
+    plt.show()
+
+if __name__ == '__main__':
+    main()
