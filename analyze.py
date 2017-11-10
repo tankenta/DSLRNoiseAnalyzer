@@ -3,19 +3,12 @@
 import glob
 import os
 import sys
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-MEAN_IMG_FNAME = 'mean.jpg'
-IMREAD_FLAG = cv2.IMREAD_GRAYSCALE | cv2.IMREAD_ANYDEPTH
-IMSHAPE = (3456, 5184)
-SHAPE = (300, 300)
-OFFSET = tuple((np.array(IMSHAPE) - np.array(SHAPE))/2)
-TRANS_PX = 2
-BINS = 200
-SAMPLE_FLG = False
-MEAN_FLG = False
+from config import *
 
 def get_imgs_paths(par_dir, exts=['.jpg', '.JPG']):
     paths = list()
@@ -52,14 +45,7 @@ def get_dst_path(src_path, dst_dir):
     dst_path = os.path.join(dst_dir, fname)
     return dst_path
 
-
-def main():
-    if len(sys.argv) < 3:
-        print('Usage: ./trim.py src_dir dst_dir')
-        return
-    src_dir = sys.argv[1]
-    dst_dir = sys.argv[2]
-    
+def compute_noise(src_dir, dst_dir):
     sample_dicts = list()
     if SAMPLE_FLG:
         paths = get_imgs_paths(src_dir)
@@ -108,13 +94,32 @@ def main():
     for sample_dict in sample_dicts:
         diff_img = sample_dict['img'].astype(int) - mean_img.astype(int)
         noise_arr.extend(diff_img.flatten())
+    return noise_arr
+
+
+def main():
+#     if len(sys.argv) < 3:
+#         print('Usage: ./trim.py src_dir dst_dir')
+#         return
+#     src_dir = sys.argv[1]
+#     dst_dir = sys.argv[2]
+#     noise_arr = compute_noise(src_dir, dst_dir)
+    noise_arrs = list()
+    for src_dir, dst_dir in zip(SRC_DIRS, DST_DIRS):
+        noise_arr = compute_noise(src_dir, dst_dir)
+        noise_arrs.append(noise_arr)
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    ax.hist(noise_arr, bins=BINS)
+    for noise_arr, plt_label, plt_color in zip(noise_arrs, PLT_LABELS, PLT_COLORS):
+        ax.hist(
+                noise_arr, bins=BINS, alpha=PLT_ALPHA,
+                histtype='stepfilled', color=plt_color, label=plt_label
+        )
+    ax.legend()
     ax.set_xlabel('diff')
     ax.set_ylabel('freq')
-#     ax.set_xlim((-20, 20))
+#     ax.set_xlim((-30, 30))
     plt.show()
 
 if __name__ == '__main__':
