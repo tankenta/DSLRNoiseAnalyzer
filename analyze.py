@@ -114,6 +114,19 @@ def main():
         sample_dicts_arr.append(sample_dicts)
         mean_img_arr.append(np.copy(mean_img))
 
+    # print statistic representative value
+    for noise_arr, plt_label in zip(noise_arrs, PLT_LABELS):
+        noise_np = np.array(noise_arr)
+        print(plt_label)
+        print('mean,median,min,max,variance,SD')
+        print('{0:.3f},{1:.1f},{2},{3},{4:.3f},{5:.3f}'.format(
+            noise_np.mean(), np.median(noise_np), noise_np.min(),
+            noise_np.max(), noise_np.var(), noise_np.std()
+        ))
+        hist = np.histogram(noise_np)
+        print(hist[0])
+        print(hist[1])
+
     # draw histgram
     fig_hist = plt.figure(1)
     ax_hist = fig_hist.add_subplot(1, 1, 1)
@@ -125,7 +138,7 @@ def main():
     ax_hist.legend()
     ax_hist.set_xlabel('diff')
     ax_hist.set_ylabel('freq')
-#     ax_hist.set_xlim((-30, 30))
+#     ax_hist.set_xlim((-50, 30))
 
     # show samples and mean imgs
     fig_imgs = plt.figure(2)
