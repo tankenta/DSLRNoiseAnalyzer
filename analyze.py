@@ -94,7 +94,7 @@ def compute_noise(src_dir, dst_dir):
     for sample_dict in sample_dicts:
         diff_img = sample_dict['img'].astype(int) - mean_img.astype(int)
         noise_arr.extend(diff_img.flatten())
-    return noise_arr
+    return noise_arr, sample_dicts, np.copy(mean_img)
 
 
 def main():
@@ -104,22 +104,42 @@ def main():
 #     src_dir = sys.argv[1]
 #     dst_dir = sys.argv[2]
 #     noise_arr = compute_noise(src_dir, dst_dir)
+    # compute noise
     noise_arrs = list()
+    sample_dicts_arr = list()
+    mean_img_arr = list()
     for src_dir, dst_dir in zip(SRC_DIRS, DST_DIRS):
-        noise_arr = compute_noise(src_dir, dst_dir)
+        noise_arr, sample_dicts, mean_img = compute_noise(src_dir, dst_dir)
         noise_arrs.append(noise_arr)
+        sample_dicts_arr.append(sample_dicts)
+        mean_img_arr.append(np.copy(mean_img))
 
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+    # draw histgram
+    fig_hist = plt.figure(1)
+    ax_hist = fig_hist.add_subplot(1, 1, 1)
     for noise_arr, plt_label, plt_color in zip(noise_arrs, PLT_LABELS, PLT_COLORS):
-        ax.hist(
+        ax_hist.hist(
                 noise_arr, bins=BINS, alpha=PLT_ALPHA,
                 histtype='stepfilled', color=plt_color, label=plt_label
         )
-    ax.legend()
-    ax.set_xlabel('diff')
-    ax.set_ylabel('freq')
-#     ax.set_xlim((-30, 30))
+    ax_hist.legend()
+    ax_hist.set_xlabel('diff')
+    ax_hist.set_ylabel('freq')
+#     ax_hist.set_xlim((-30, 30))
+
+    # show samples and mean imgs
+    fig_imgs = plt.figure(2)
+    for i, (sample_dicts, mean_img) in enumerate(zip(sample_dicts_arr, mean_img_arr)):
+        sample_img = sample_dicts[0]['img']
+        ax_s = fig_imgs.add_subplot(2, len(mean_img_arr), 2*i+1)
+        ax_s.imshow(cv2.cvtColor(sample_img, cv2.COLOR_GRAY2RGB))
+        ax_s.set_xlabel('sample ({0})'.format(PLT_LABELS[i]))
+        ax_m = fig_imgs.add_subplot(2, len(mean_img_arr), 2*i+2)
+        ax_m.imshow(cv2.cvtColor(mean_img, cv2.COLOR_GRAY2RGB))
+        ax_m.set_xlabel('mean of 30 imgs ({0})'.format(PLT_LABELS[i]))
+
+    fig_hist.tight_layout()
+    fig_imgs.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
