@@ -10,6 +10,7 @@ import numpy as np
 
 from config import *
 
+
 def get_imgs_paths(par_dir, exts=['.jpg', '.JPG']):
     paths = list()
     for ext in exts:
@@ -98,12 +99,6 @@ def compute_noise(src_dir, dst_dir):
 
 
 def main():
-#     if len(sys.argv) < 3:
-#         print('Usage: ./trim.py src_dir dst_dir')
-#         return
-#     src_dir = sys.argv[1]
-#     dst_dir = sys.argv[2]
-#     noise_arr = compute_noise(src_dir, dst_dir)
     # compute noise
     noise_arrs = list()
     sample_dicts_arr = list()
@@ -118,8 +113,8 @@ def main():
     for noise_arr, plt_label in zip(noise_arrs, PLT_LABELS):
         noise_np = np.array(noise_arr)
         print(plt_label)
-        print('mean,median,min,max,variance,SD')
-        print('{0:.3f},{1:.1f},{2},{3},{4:.3f},{5:.3f}'.format(
+        print('mean, median, min, max, variance, SD')
+        print('{0:.3f}, {1:.1f}, {2}, {3}, {4:.3f}, {5:.3f}'.format(
             noise_np.mean(), np.median(noise_np), noise_np.min(),
             noise_np.max(), noise_np.var(), noise_np.std()
         ))
@@ -149,7 +144,7 @@ def main():
         ax_s.set_xlabel('sample ({0})'.format(PLT_LABELS[i]))
         ax_m = fig_imgs.add_subplot(2, len(mean_img_arr), 2*i+2)
         ax_m.imshow(cv2.cvtColor(mean_img, cv2.COLOR_GRAY2RGB))
-        ax_m.set_xlabel('mean of 30 imgs ({0})'.format(PLT_LABELS[i]))
+        ax_m.set_xlabel('mean of {0} imgs ({1})'.format(len(sample_dicts), PLT_LABELS[i]))
 
     fig_hist.tight_layout()
     fig_imgs.tight_layout()
