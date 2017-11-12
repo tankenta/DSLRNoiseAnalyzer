@@ -97,6 +97,41 @@ def compute_noise(src_dir, dst_dir):
         noise_arr.extend(diff_img.flatten())
     return noise_arr, sample_dicts, np.copy(mean_img)
 
+def print_representative_val(noise_arr, plt_label):
+        noise_np = np.array(noise_arr)
+        print('# {0}'.format(plt_label))
+        print('mean, median, min, max, variance, SD')
+        print('{0:.3f}, {1:.1f}, {2}, {3}, {4:.3f}, {5:.3f}'.format(
+            noise_np.mean(), np.median(noise_np), noise_np.min(),
+            noise_np.max(), noise_np.var(), noise_np.std()
+        ))
+        hist = np.histogram(noise_np)
+        print(hist[0])
+        print(hist[1])
+
+def draw_histogram(fig, noise_arrs, bins, plt_labels, plt_colors, plt_alpha):
+    ax_hist = fig.add_subplot(1, 1, 1)
+    for noise_arr, plt_label, plt_color in zip(noise_arrs, plt_labels, plt_colors):
+        ax_hist.hist(
+                noise_arr, bins=bins, alpha=plt_alpha,
+                histtype='stepfilled', color=plt_color, label=plt_label
+        )
+    ax_hist.legend()
+    ax_hist.set_xlabel('diff')
+    ax_hist.set_ylabel('freq')
+#     ax_hist.set_xlim((-50, 30))
+    fig.tight_layout()
+
+def show_sample_and_mean_imgs(fig, sample_dicts_arr, mean_img_arr, plt_labels):
+    for i, (sample_dicts, mean_img) in enumerate(zip(sample_dicts_arr, mean_img_arr)):
+        sample_img = sample_dicts[0]['img']
+        ax_s = fig.add_subplot(2, len(mean_img_arr), 2*i+1)
+        ax_s.imshow(cv2.cvtColor(sample_img, cv2.COLOR_GRAY2RGB))
+        ax_s.set_xlabel('sample ({0})'.format(plt_labels[i]))
+        ax_m = fig.add_subplot(2, len(mean_img_arr), 2*i+2)
+        ax_m.imshow(cv2.cvtColor(mean_img, cv2.COLOR_GRAY2RGB))
+        ax_m.set_xlabel('mean of {0} imgs ({1})'.format(len(sample_dicts), plt_labels[i]))
+    fig.tight_layout()
 
 def main():
     # compute noise
@@ -111,44 +146,18 @@ def main():
 
     # print statistic representative value
     for noise_arr, plt_label in zip(noise_arrs, PLT_LABELS):
-        noise_np = np.array(noise_arr)
-        print(plt_label)
-        print('mean, median, min, max, variance, SD')
-        print('{0:.3f}, {1:.1f}, {2}, {3}, {4:.3f}, {5:.3f}'.format(
-            noise_np.mean(), np.median(noise_np), noise_np.min(),
-            noise_np.max(), noise_np.var(), noise_np.std()
-        ))
-        hist = np.histogram(noise_np)
-        print(hist[0])
-        print(hist[1])
+        print_representative_val(noise_arr, plt_label)
 
     # draw histgram
     fig_hist = plt.figure(1)
-    ax_hist = fig_hist.add_subplot(1, 1, 1)
-    for noise_arr, plt_label, plt_color in zip(noise_arrs, PLT_LABELS, PLT_COLORS):
-        ax_hist.hist(
-                noise_arr, bins=BINS, alpha=PLT_ALPHA,
-                histtype='stepfilled', color=plt_color, label=plt_label
-        )
-    ax_hist.legend()
-    ax_hist.set_xlabel('diff')
-    ax_hist.set_ylabel('freq')
-#     ax_hist.set_xlim((-50, 30))
+    draw_histogram(fig_hist, noise_arrs, BINS, PLT_LABELS, PLT_COLORS, PLT_ALPHA)
 
     # show samples and mean imgs
     fig_imgs = plt.figure(2)
-    for i, (sample_dicts, mean_img) in enumerate(zip(sample_dicts_arr, mean_img_arr)):
-        sample_img = sample_dicts[0]['img']
-        ax_s = fig_imgs.add_subplot(2, len(mean_img_arr), 2*i+1)
-        ax_s.imshow(cv2.cvtColor(sample_img, cv2.COLOR_GRAY2RGB))
-        ax_s.set_xlabel('sample ({0})'.format(PLT_LABELS[i]))
-        ax_m = fig_imgs.add_subplot(2, len(mean_img_arr), 2*i+2)
-        ax_m.imshow(cv2.cvtColor(mean_img, cv2.COLOR_GRAY2RGB))
-        ax_m.set_xlabel('mean of {0} imgs ({1})'.format(len(sample_dicts), PLT_LABELS[i]))
+    show_sample_and_mean_imgs(fig_imgs, sample_dicts_arr, mean_img_arr, PLT_LABELS)
 
-    fig_hist.tight_layout()
-    fig_imgs.tight_layout()
     plt.show()
+
 
 if __name__ == '__main__':
     main()
