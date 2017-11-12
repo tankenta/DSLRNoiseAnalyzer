@@ -11,7 +11,7 @@ IMSHAPE = (3456, 5184)
 SHAPE = (300, 300)
 OFFSET = tuple((np.array(IMSHAPE) - np.array(SHAPE))/2)
 TRANS_PX = 2
-BINS = 200
+BINS = None
 SAMPLE_FLG = True
 MEAN_FLG = True
 
