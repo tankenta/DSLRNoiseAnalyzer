@@ -111,9 +111,10 @@ def print_representative_val(noise_arr, plt_label):
 
 def draw_histogram(fig, noise_arrs, bins, plt_labels, plt_colors, plt_alpha):
     ax_hist = fig.add_subplot(1, 1, 1)
-    if bins is None:
-        bins = np.arange(np.min(noise_arr), np.max(noise_arr) + 1) - 0.5
+    calc_bins = bins is None
     for noise_arr, plt_label, plt_color in zip(noise_arrs, plt_labels, plt_colors):
+        if calc_bins:
+            bins = np.arange(np.min(noise_arr), np.max(noise_arr) + 1) - 0.5
         ax_hist.hist(
                 noise_arr, bins=bins, alpha=plt_alpha,
                 histtype='stepfilled', color=plt_color, label=plt_label
