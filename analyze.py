@@ -125,7 +125,7 @@ def draw_histogram(fig, noise_arrs, bins, plt_labels, plt_colors, plt_alpha):
 #     ax_hist.set_xlim((-50, 30))
     fig.tight_layout()
 
-def save_frequency_table(noise_arr, fname_prefix):
+def save_frequency_table(noise_arr, dst_dir, fname_prefix):
     bins = np.arange(np.min(noise_arr), np.max(noise_arr) + 2) - 0.5
     freq, boundary = np.histogram(noise_arr, bins=bins)
     varmin = boundary[:-1]
@@ -159,10 +159,11 @@ def main():
         mean_img_arr.append(np.copy(mean_img))
 
     # print statistic representative value
-    # save frequency table
-    for noise_arr, plt_label, fname_prefix in zip(noise_arrs, PLT_LABELS, FNAME_PREFIXES):
+    for noise_arr, plt_label in zip(noise_arrs, PLT_LABELS):
         print_representative_val(noise_arr, plt_label)
-        save_frequency_table(noise_arr, fname_prefix)
+    # save frequency table
+    for noise_arr, dst_dir, fname_prefix in zip(noise_arrs, DST_DIRS, FNAME_PREFIXES):
+        save_frequency_table(noise_arr, dst_dir, fname_prefix)
 
     # draw histgram
     fig_hist = plt.figure(1)
