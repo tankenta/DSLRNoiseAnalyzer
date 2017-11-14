@@ -101,7 +101,7 @@ def print_representative_val(noise_arr, plt_label):
         noise_np = np.array(noise_arr)
         print('# {0}'.format(plt_label))
         print('mean, median, min, max, variance, SD')
-        print('{0:.3f}, {1:.1f}, {2}, {3}, {4:.3f}, {5:.3f}'.format(
+        print('{0:.3f}, {1:.1f}, {2}, {3}, {4:.3f}, {5:.3f}\n'.format(
             noise_np.mean(), np.median(noise_np), noise_np.min(),
             noise_np.max(), noise_np.var(), noise_np.std()
         ))
@@ -114,7 +114,7 @@ def draw_histogram(fig, noise_arrs, bins, plt_labels, plt_colors, plt_alpha):
     calc_bins = bins is None
     for noise_arr, plt_label, plt_color in zip(noise_arrs, plt_labels, plt_colors):
         if calc_bins:
-            bins = np.arange(np.min(noise_arr), np.max(noise_arr) + 1) - 0.5
+            bins = np.arange(np.min(noise_arr), np.max(noise_arr) + 2) - 0.5
         ax_hist.hist(
                 noise_arr, bins=bins, alpha=plt_alpha,
                 histtype='stepfilled', color=plt_color, label=plt_label
@@ -124,6 +124,17 @@ def draw_histogram(fig, noise_arrs, bins, plt_labels, plt_colors, plt_alpha):
     ax_hist.set_ylabel('freq')
 #     ax_hist.set_xlim((-50, 30))
     fig.tight_layout()
+
+def save_frequency_table(noise_arr, fname_prefix):
+    bins = np.arange(np.min(noise_arr), np.max(noise_arr) + 2) - 0.5
+    freq, boundary = np.histogram(noise_arr, bins=bins)
+    varmin = boundary[:-1]
+    varsup = boundary[1:]
+    dst_data = np.vstack((varmin, varsup, freq)).T
+    dst_path = os.path.join(dst_dir, '{0}_freq.csv'.format(fname_prefix))
+    header = 'varmin,varsup,freq'
+    np.savetxt(dst_path, dst_data, delimiter=',', header=header)
+    print('Wrote: {0}'.format(dst_path))
 
 def show_sample_and_mean_imgs(fig, sample_dicts_arr, mean_img_arr, plt_labels):
     for i, (sample_dicts, mean_img) in enumerate(zip(sample_dicts_arr, mean_img_arr)):
@@ -148,8 +159,10 @@ def main():
         mean_img_arr.append(np.copy(mean_img))
 
     # print statistic representative value
-    for noise_arr, plt_label in zip(noise_arrs, PLT_LABELS):
+    # save frequency table
+    for noise_arr, plt_label, fname_prefix in zip(noise_arrs, PLT_LABELS, FNAME_PREFIXES):
         print_representative_val(noise_arr, plt_label)
+        save_frequency_table(noise_arr, fname_prefix)
 
     # draw histgram
     fig_hist = plt.figure(1)
