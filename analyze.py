@@ -11,6 +11,19 @@ import numpy as np
 from config import *
 
 
+def get_dst_dir_path(src_dir, dst_dir_prefix):
+    if src_dir == '':
+        print('src_dir must not be empty. exit.')
+        sys.exit(1)
+    if src_dir[-1] == '/' or src_dir[-1] == '\\':
+        src_dir = src_dir[:-1]
+    par_dir, child_dir = os.path.split(src_dir)
+    dst_dir = os.path.join(par_dir, dst_dir_prefix + child_dir)
+    if not os.path.isdir(dst_dir):
+        os.mkdir(dst_dir)
+        print('mkdir: {0}'.format(dst_dir))
+    return dst_dir
+
 def get_imgs_paths(par_dir, exts=['.jpg', '.JPG']):
     paths = list()
     for ext in exts:
@@ -42,7 +55,7 @@ def sample_with_trans(src_img, target_img, offset, shape, trans_px):
     return dst_img
 
 def get_dst_path(src_path, dst_dir):
-    _, fname = os.path.split(src_path)
+    fname = os.path.basename(src_path)
     dst_path = os.path.join(dst_dir, fname)
     return dst_path
 
@@ -131,7 +144,7 @@ def save_frequency_table(noise_arr, dst_dir, fname_prefix):
     varmin = boundary[:-1]
     varsup = boundary[1:]
     dst_data = np.vstack((varmin, varsup, freq)).T
-    dst_path = os.path.join(dst_dir, '{0}_freq.csv'.format(fname_prefix))
+    dst_path = os.path.join(dst_dir, '{0}freq.csv'.format(fname_prefix))
     header = 'varmin,varsup,freq'
     np.savetxt(dst_path, dst_data, delimiter=',', header=header)
     print('Wrote: {0}'.format(dst_path))
@@ -152,18 +165,18 @@ def main():
     noise_arrs = list()
     sample_dicts_arr = list()
     mean_img_arr = list()
-    for src_dir, dst_dir in zip(SRC_DIRS, DST_DIRS):
+    for src_dir, fname_prefix in zip(SRC_DIRS, FNAME_PREFIXES):
+        dst_dir = get_dst_dir_path(src_dir, DST_DIR_PREFIX)
         noise_arr, sample_dicts, mean_img = compute_noise(src_dir, dst_dir)
         noise_arrs.append(noise_arr)
         sample_dicts_arr.append(sample_dicts)
         mean_img_arr.append(np.copy(mean_img))
+        # save frequency table
+        save_frequency_table(noise_arr, dst_dir, fname_prefix)
 
     # print statistic representative value
     for noise_arr, plt_label in zip(noise_arrs, PLT_LABELS):
         print_representative_val(noise_arr, plt_label)
-    # save frequency table
-    for noise_arr, dst_dir, fname_prefix in zip(noise_arrs, DST_DIRS, FNAME_PREFIXES):
-        save_frequency_table(noise_arr, dst_dir, fname_prefix)
 
     # draw histgram
     fig_hist = plt.figure(1)
