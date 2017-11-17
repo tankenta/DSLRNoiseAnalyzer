@@ -25,10 +25,10 @@ def get_dst_dir_path(src_dir, dst_dir_prefix):
     return dst_dir
 
 def get_imgs_paths(par_dir, exts=['.jpg', '.JPG']):
-    paths = list()
+    paths = set()
     for ext in exts:
-        paths.extend(glob.glob(os.path.join(par_dir, '*' + ext)))
-    return paths
+        paths |= set(glob.glob(os.path.join(par_dir, '*' + ext)))
+    return sorted(paths)
 
 def sample_small_img(src_img, offset, shape):
     y, x = offset
